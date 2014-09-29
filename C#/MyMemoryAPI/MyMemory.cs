@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -11,8 +12,21 @@ namespace MyMemoryAPI
     public class MyMemory
     {
         private static string myMemoryBaseUrl = "http://api.mymemory.translated.net";
+        private bool IsAuthenticated = false;
+        private string key;
+        private string email;
 
-        public static void Get()
+        public MyMemory(){
+
+        }
+
+        public MyMemory(string key, string email)
+        {
+            this.key = key;
+            this.email = email;
+        }
+
+        public static void Get(string sentence, RegionInfo sourceLanguage, RegionInfo destinationLanguage)
         {
             HttpClient client = new HttpClient();
             client.BaseAddress = new Uri(myMemoryBaseUrl);
@@ -66,14 +80,12 @@ namespace MyMemoryAPI
             HttpClient client = new HttpClient();
             client.BaseAddress = new Uri(myMemoryBaseUrl);
 
-            string uri = "/keygen";
+            string uri = "/keygen" +
+                "?" +
+                "user=" + Uri.EscapeDataString(username) + "&" +
+                "pass=" + Uri.EscapeDataString(password);
 
-            MultipartFormDataContent form = new MultipartFormDataContent();
-
-            form.Add(new StringContent(username), "user");
-            form.Add(new StringContent(password), "pass");
-
-            HttpResponseMessage response = client.PostAsync(uri, form).Result;
+            HttpResponseMessage response = client.GetAsync(uri).Result;
 
             if (response.IsSuccessStatusCode)
             {
