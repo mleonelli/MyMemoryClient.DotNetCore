@@ -9,15 +9,21 @@ It requires Newtonsoft.Json.dll library.
 Calling MyMemory without key and email
 
 <code>MyMemory myMemory = new MyMemory();<\code>
+
 <code>MyMemoryGetResponse getResponse = myMemory.Get("GitHub rocks!", new RegionInfo("en-US"), new RegionInfo("it-IT"));<\code>
+
 <code>MyMemorySetResponse setResponse = myMemory.Set("GitHub rocks!", "GitHub spacca!", new RegionInfo("en-US"), new RegionInfo("it-IT"));<\code>
+
 <code>MyMemoryGetResponse yourKey = myMemory.Keygen("myUsername", "myPassword");<\code>
 
 Calling MyMemory with key and email
 
 <code>MyMemory myMemory = new MyMemory("yourKey", "yourEmail");<\code>
+
 <code>MyMemoryGetResponse getResponse = myMemory.Get("GitHub rocks!", new RegionInfo("en-US"), new RegionInfo("it-IT"));<\code>
+
 <code>MyMemorySetResponse setResponse = myMemory.Set("GitHub rocks!", "GitHub spacca!", new RegionInfo("en-US"), new RegionInfo("it-IT"));<\code>
+
 <code>MyMemoryGetResponse yourKey = myMemory.Keygen("yourUsername", "yourPassword");<\code>
 
 ####MyMemory
