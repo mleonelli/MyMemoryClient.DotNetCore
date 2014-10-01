@@ -13,8 +13,10 @@ namespace MyMemoryAPI
     {
         private static string myMemoryBaseUrl = "http://api.mymemory.translated.net";
         private bool IsAuthenticated = false;
+        
         private string key;
         private string email;
+        private string ip = null;
 
         public MyMemory(){
 
@@ -26,29 +28,93 @@ namespace MyMemoryAPI
             this.email = email;
         }
 
-        public static void Get(string sentence, RegionInfo sourceLanguage, RegionInfo destinationLanguage)
+        public MyMemory(string key, string email, string ip)
+        {
+            this.key = key;
+            this.email = email;
+            this.ip = ip;
+        }
+
+        public MyMemoryGetResponse Get(string sentence, RegionInfo sourceLanguage, RegionInfo destinationLanguage)
+        {
+            string uri = "/get" +
+                "?" +
+                "q=" + Uri.EscapeDataString(sentence) + "&" +
+                "langpair=" + sourceLanguage.Name + "|" + destinationLanguage.Name;
+
+            if (this.key != null)
+            {
+                uri +=
+                    "&" + "key=" + this.key +
+                    "&" + "de=" + this.email;
+                if (this.ip != null)
+                    uri += "&" + "ip=" + this.ip;
+            }
+
+            return Get(uri, OutputFormat.Json);
+        }
+
+        public MyMemoryGetResponse Get(string sentence, RegionInfo sourceLanguage, RegionInfo destinationLanguage, OutputFormat outFormat = OutputFormat.Json, bool machineTranslation = true, bool OnlyPrivateMT = false)
+        {
+            string outFormatString = OuputFormat(outFormat);
+            string uri = "/get" +
+                "?" +
+                "q=" + Uri.EscapeDataString(sentence) + "&" +
+                "langpair=" + sourceLanguage.Name + "|" + destinationLanguage.Name + "&" +
+                "mt=" + Convert.ToInt32(machineTranslation) + "&" +
+                "of=" + outFormatString;
+
+            if (this.key != null)
+            {
+                uri +=
+                    "&" + "key=" + this.key +
+                    "&" + "de=" + this.email;
+                if (this.ip != null)
+                    uri += "&" + "ip=" + this.ip;
+                uri += "&" + "onlyprivate=" + Convert.ToInt32(OnlyPrivateMT);
+            }
+
+            return Get(uri, outFormat);
+        }
+
+        private static string OuputFormat(OutputFormat outFormat)
+        {
+            if (outFormat == null)
+                return "json";
+
+            switch (outFormat)
+            {
+                case OutputFormat.Json:
+                    return "json";
+                case OutputFormat.Tmx:
+                    return "tmx";
+                case OutputFormat.Array:
+                    return "array";
+                default:
+                    return "json";
+            }
+        }
+
+        private MyMemoryGetResponse Get(string uri, OutputFormat outFormat)
         {
             HttpClient client = new HttpClient();
             client.BaseAddress = new Uri(myMemoryBaseUrl);
-
-            string uri = "/get" +
-                "?" +
-                "q=" + "Hello World!" + "&" +
-                "langpair=" + "en|it";
 
             HttpResponseMessage response = client.GetAsync(uri).Result;
 
             if (response.IsSuccessStatusCode)
             {
                 MyMemoryGetResponse ajsonObject = JsonConvert.DeserializeObject<MyMemoryGetResponse>(response.Content.ReadAsStringAsync().Result);
+                return ajsonObject;
             }
             else
             {
-
+                throw new Exception("Response Exception");
             }
+            
         }
 
-        public static void Set()
+        public MyMemorySetResponse Set(string segment, string translation, RegionInfo sourceLanguage, RegionInfo destinationLanguage)
         {
             HttpClient client = new HttpClient();
             client.BaseAddress = new Uri(myMemoryBaseUrl);
@@ -56,26 +122,31 @@ namespace MyMemoryAPI
 
             string uri = "/set" +
                 "?" +
-                "seg=" + "Hello World!" + "&" +
-                "tra=" + "Ciao Mondo!" + "&" +
-                "langpair=" + "en|it";
+                "seg=" + segment + "&" +
+                "tra=" + translation + "&" +
+                "langpair=" + sourceLanguage.Name + "|" + destinationLanguage.Name;
 
+            if (this.key != null)
+            {
+                uri +=
+                    "&" + "key=" + this.key +
+                    "&" + "de=" + this.email;
+            }
 
-            //form.Add(new StringContent(tra), "key");
-            //form.Add(new StringContent(langpair), "de");
             HttpResponseMessage response = client.GetAsync(uri).Result;
 
             if (response.IsSuccessStatusCode)
             {
-                MyMemoryGetResponse ajsonObject = JsonConvert.DeserializeObject<MyMemoryGetResponse>(response.Content.ReadAsStringAsync().Result);
+                MyMemorySetResponse ajsonObject = JsonConvert.DeserializeObject<MyMemorySetResponse>(response.Content.ReadAsStringAsync().Result);
+                return ajsonObject;
             }
             else
             {
-
+                throw new Exception("Response Exception");
             }
         }
 
-        public static void Keygen(string username, string password)
+        public MyMemoryGetResponse Keygen(string username, string password)
         {
             HttpClient client = new HttpClient();
             client.BaseAddress = new Uri(myMemoryBaseUrl);
@@ -90,10 +161,11 @@ namespace MyMemoryAPI
             if (response.IsSuccessStatusCode)
             {
                 MyMemoryGetResponse ajsonObject = JsonConvert.DeserializeObject<MyMemoryGetResponse>(response.Content.ReadAsStringAsync().Result);
+                return ajsonObject;
             }
             else
             {
-
+                throw new Exception("Response Exception");
             }
         }
     }
